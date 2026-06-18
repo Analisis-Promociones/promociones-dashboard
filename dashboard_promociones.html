@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard de promociones VES</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      background: #f4f7fb;
+      color: #263238;
+      font-family: Arial, sans-serif;
+    }
+    .hero {
+      background: #1F4E78;
+      color: #fff;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 10px 24px rgba(31,78,120,.22);
+    }
+    .kpi-card, .chart-card, .table-card {
+      border: 0;
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    }
+    .kpi-label {
+      color: #6c757d;
+      font-size: .9rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .kpi-value {
+      color: #1F4E78;
+      font-weight: 800;
+      font-size: 1.55rem;
+    }
+    .badge-soft {
+      background: #e9f2fb;
+      color: #1F4E78;
+      border: 1px solid #cfe0ef;
+    }
+    thead th {
+      background: #1F4E78 !important;
+      color: #fff !important;
+      white-space: nowrap;
+    }
+    tbody tr:hover {
+      background: #eef6ff;
+    }
+    .positive {
+      color: #146c43;
+      font-weight: 700;
+    }
+    .filter-btn.active {
+      background: #1F4E78 !important;
+      color: #fff !important;
+      border-color: #1F4E78 !important;
+    }
+    .small-note {
+      color: #6c757d;
+      font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container py-4">
+    <section class="hero mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+          <h1 class="h3 mb-2">Dashboard de rendimiento de promociones VES</h1>
+          <p class="mb-0">Análisis interactivo basado en usuarios activos, ingreso mínimo estimado, conversión real y ganancia mínima por promoción.</p>
+        </div>
+        <div class="text-lg-end">
+          <span class="badge rounded-pill badge-soft p-2">Moneda: VES</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card kpi-card h-100">
+          <div class="card-body">
+            <div class="kpi-label">Total usuarios activos</div>
+            <div class="kpi-value" id="kpiUsuarios">7,898</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card h-100">
+          <div class="card-body">
+            <div class="kpi-label">Ingreso mínimo estimado</div>
+            <div class="kpi-value" id="kpiIngreso">Bs. 22,601,500.00</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card h-100">
+          <div class="card-body">
+            <div class="kpi-label">Conversión real</div>
+            <div class="kpi-value" id="kpiConversion">Bs. 3,209,877.00</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card kpi-card h-100">
+          <div class="card-body">
+            <div class="kpi-label">Ganancia mínima</div>
+            <div class="kpi-value" id="kpiGanancia">Bs. 19,391,623.00</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card table-card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+          <div>
+            <h2 class="h5 mb-1">Filtro por tipo de evento</h2>
+            <div class="small-note">Selecciona una categoría para actualizar la tabla y los totales.</div>
+          </div>
+          <div class="btn-group flex-wrap" role="group" aria-label="Filtros">
+            <button class="btn btn-outline-primary filter-btn active" data-filter="Todos">Todos</button>
+            <button class="btn btn-outline-primary filter-btn" data-filter="Eventos de Fútbol">Eventos de Fútbol</button>
+            <button class="btn btn-outline-primary filter-btn" data-filter="Eventos de Béisbol">Eventos de Béisbol</button>
+            <button class="btn btn-outline-primary filter-btn" data-filter="Sábados de Recarga">Sábados de Recarga</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Promoción</th>
+                <th>Tipo de evento</th>
+                <th class="text-end">Usuarios activos</th>
+                <th class="text-end">Monto mínimo</th>
+                <th class="text-end">Ingreso mínimo estimado</th>
+                <th class="text-end">Conversión real</th>
+                <th class="text-end">Ganancia mínima</th>
+              </tr>
+            </thead>
+            <tbody id="promoTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="row g-4">
+      <div class="col-lg-8">
+        <div class="card chart-card h-100">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Ganancias mínimas por promoción</h2>
+            <canvas id="barChart" height="120"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card chart-card h-100">
+          <div class="card-body">
+            <h2 class="h5 mb-3">Usuarios activos por tipo de evento</h2>
+            <canvas id="donutChart" height="220"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+const promociones = [{"promocion": "Champions League - Ida", "tipo": "Eventos de Fútbol", "usuarios": 662, "minimo": 3000, "ingreso": 1986000.0, "conversion": 362598.75, "ganancia": 1623401.25}, {"promocion": "Champions League - Vuelta", "tipo": "Eventos de Fútbol", "usuarios": 901, "minimo": 3000, "ingreso": 2703000.0, "conversion": 643384.31, "ganancia": 2059615.69}, {"promocion": "Clásico Mundial Béisbol", "tipo": "Eventos de Béisbol", "usuarios": 812, "minimo": 2000, "ingreso": 1624000.0, "conversion": 370063.5, "ganancia": 1253936.5}, {"promocion": "Copa del Rey Semifinal", "tipo": "Eventos de Fútbol", "usuarios": 601, "minimo": 2500, "ingreso": 1502500.0, "conversion": 235052.5, "ganancia": 1267447.5}, {"promocion": "EFL Cup Final", "tipo": "Eventos de Fútbol", "usuarios": 768, "minimo": 3000, "ingreso": 2304000.0, "conversion": 343882.4, "ganancia": 1960117.6}, {"promocion": "MLB Opening Day", "tipo": "Eventos de Béisbol", "usuarios": 679, "minimo": 2000, "ingreso": 1358000.0, "conversion": 394670.6, "ganancia": 963329.4}, {"promocion": "Sábado de Recarga 1", "tipo": "Sábados de Recarga", "usuarios": 1364, "minimo": 1500, "ingreso": 2046000.0, "conversion": 132475.01, "ganancia": 1913524.99}, {"promocion": "Sábado de Recarga 2", "tipo": "Sábados de Recarga", "usuarios": 1196, "minimo": 3000, "ingreso": 3588000.0, "conversion": 258231.33, "ganancia": 3329768.67}, {"promocion": "Sábado de Recarga 3", "tipo": "Sábados de Recarga", "usuarios": 915, "minimo": 6000, "ingreso": 5490000.0, "conversion": 469518.6, "ganancia": 5020481.4}];
+
+const money = value => "Bs. " + Number(value).toLocaleString("es-VE", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const number = value => Number(value).toLocaleString("es-VE");
+
+let currentFilter = "Todos";
+let barChart;
+let donutChart;
+
+function filteredData() {
+  return currentFilter === "Todos" ? promociones : promociones.filter(item => item.tipo === currentFilter);
+}
+
+function updateKPIs(rows) {
+  const usuarios = rows.reduce((sum, item) => sum + item.usuarios, 0);
+  const ingreso = rows.reduce((sum, item) => sum + item.ingreso, 0);
+  const conversion = rows.reduce((sum, item) => sum + item.conversion, 0);
+  const ganancia = rows.reduce((sum, item) => sum + item.ganancia, 0);
+
+  document.getElementById("kpiUsuarios").textContent = number(usuarios);
+  document.getElementById("kpiIngreso").textContent = money(ingreso);
+  document.getElementById("kpiConversion").textContent = money(conversion);
+  document.getElementById("kpiGanancia").textContent = money(ganancia);
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById("promoTable");
+  tbody.innerHTML = rows.map(item => `
+    <tr>
+      <td><strong>${item.promocion}</strong></td>
+      <td><span class="badge rounded-pill badge-soft">${item.tipo}</span></td>
+      <td class="text-end">${number(item.usuarios)}</td>
+      <td class="text-end">${money(item.minimo)}</td>
+      <td class="text-end">${money(item.ingreso)}</td>
+      <td class="text-end">${money(item.conversion)}</td>
+      <td class="text-end positive">+${money(item.ganancia)}</td>
+    </tr>
+  `).join("");
+}
+
+function renderCharts(rows) {
+  const barCtx = document.getElementById("barChart");
+  const donutCtx = document.getElementById("donutChart");
+
+  if (barChart) barChart.destroy();
+  if (donutChart) donutChart.destroy();
+
+  barChart = new Chart(barCtx, {
+    type: "bar",
+    data: {
+      labels: rows.map(item => item.promocion),
+      datasets: [{
+        label: "Ganancia mínima",
+        data: rows.map(item => item.ganancia),
+        backgroundColor: "#1F4E78",
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: context => money(context.raw)
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 20 } },
+        y: {
+          ticks: {
+            callback: value => "Bs. " + Number(value).toLocaleString("es-VE")
+          }
+        }
+      }
+    }
+  });
+
+  const grouped = promociones.reduce((acc, item) => {
+    acc[item.tipo] = (acc[item.tipo] || 0) + item.usuarios;
+    return acc;
+  }, {});
+
+  donutChart = new Chart(donutCtx, {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(grouped),
+      datasets: [{
+        data: Object.values(grouped),
+        backgroundColor: ["#1F4E78", "#2E75B6", "#70AD47"]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: context => `${context.label}: ${number(context.raw)} usuarios`
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateDashboard() {
+  const rows = filteredData();
+  updateKPIs(rows);
+  renderTable(rows);
+  renderCharts(rows);
+}
+
+document.querySelectorAll(".filter-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+    currentFilter = button.dataset.filter;
+    updateDashboard();
+  });
+});
+
+updateDashboard();
+</script>
+</body>
+</html>
